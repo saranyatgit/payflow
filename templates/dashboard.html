@@ -1,0 +1,171 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard - PayFlow{% endblock %}
+
+{% block content %}
+
+<div class="dashboard">
+
+    <div class="welcome-row">
+
+        <div>
+            <h1>Hello, {{ user.name }}!</h1>
+
+            <p class="subtitle">
+                Welcome to your payment dashboard.
+            </p>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('logout') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <button class="logout-btn">
+                Logout
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- WALLET BALANCE -->
+
+    <div class="balance-card">
+
+        <p>Available Wallet Balance</p>
+
+        <h1>
+            ₹{{ "%.2f"|format(user.balance / 100) }}
+        </h1>
+
+        <small>PayFlow Digital Wallet</small>
+
+    </div>
+
+
+    <!-- TRANSFER SECTION -->
+
+    <div class="section-card">
+
+        <h2>Send Money</h2>
+
+        <p class="subtitle">
+            Transfer money securely to another PayFlow user.
+        </p>
+
+        <form id="transferForm">
+
+            <label>Receiver Email</label>
+
+            <input
+                type="email"
+                id="receiver"
+                placeholder="Enter receiver email"
+                required
+            >
+
+            <label>Amount (₹)</label>
+
+            <input
+                type="number"
+                id="amount"
+                placeholder="Enter amount"
+                min="0.01"
+                step="0.01"
+                required
+            >
+
+            <button type="submit" id="transferButton">
+                Transfer Money
+            </button>
+
+        </form>
+
+        <div id="message" aria-live="polite"></div>
+
+    </div>
+
+
+    <!-- TRANSACTION HISTORY -->
+
+    <div class="section-card">
+
+        <h2>Transaction History</h2>
+
+        {% if transactions %}
+
+            {% for transaction in transactions %}
+
+                <div class="transaction">
+
+                    <div class="transaction-info">
+
+                        {% if transaction.sender_id == session["user_id"] %}
+
+                            <strong>Money Sent</strong>
+
+                            <p>To: {{ transaction.receiver_name }}</p>
+
+                            <span class="sent">-</span>
+
+                        {% else %}
+
+                            <strong>Money Received</strong>
+
+                            <p>From: {{ transaction.sender_name }}</p>
+
+                            <span class="received">+</span>
+
+                        {% endif %}
+
+                        <small>
+                            Transaction #{{ transaction.id }}
+                        </small>
+
+                        <small>
+                            {{ transaction.created_at }}
+                        </small>
+
+                    </div>
+
+                    <div class="transaction-amount">
+
+                        <strong>
+                            ₹{{ "%.2f"|format(transaction.amount / 100) }}
+                        </strong>
+
+                        <span class="status">
+                            {{ transaction.status }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="subtitle">
+                No transactions yet.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+{% endblock %}
